@@ -24,23 +24,49 @@ function SensorCard({ icon, title, value, unit, description }) {
   );
 }
 
-function QualityCard({ score }) {
-  const score100 = score !== null ? Math.round(score * 10) : null;
+function QualityCard({ contaminationScore }) {
+  /*
+   * ML MODEL:
+   *
+   * Higher score = MORE contamination
+   *
+   * Expected range:
+   * 0 → least contamination
+   * 10 → highest contamination
+   *
+   * Therefore:
+   *
+   * Quality Score = 10 - Contamination Score
+   *
+   * Then convert:
+   *
+   * Quality / 10 → Quality / 100
+   */
+
+  const qualityScore10 =
+    contaminationScore !== null
+      ? Math.max(0, Math.min(10, 10 - contaminationScore))
+      : null;
+
+  const qualityScore100 =
+    qualityScore10 !== null
+      ? Math.round(qualityScore10 * 10)
+      : null;
 
   let category = "AWAITING DATA";
   let categoryClass = "waiting";
 
-  if (score100 !== null) {
-    if (score100 >= 90) {
+  if (qualityScore100 !== null) {
+    if (qualityScore100 >= 90) {
       category = "EXCELLENT";
       categoryClass = "good";
-    } else if (score100 >= 75) {
+    } else if (qualityScore100 >= 75) {
       category = "GOOD";
       categoryClass = "good";
-    } else if (score100 >= 50) {
+    } else if (qualityScore100 >= 50) {
       category = "MODERATE";
       categoryClass = "moderate";
-    } else if (score100 >= 25) {
+    } else if (qualityScore100 >= 25) {
       category = "POOR";
       categoryClass = "poor";
     } else {
@@ -49,75 +75,108 @@ function QualityCard({ score }) {
     }
   }
 
-  const progress = score100 !== null ? score100 * 3.6 : 0;
+  const progress =
+    qualityScore100 !== null
+      ? qualityScore100 * 3.6
+      : 0;
 
   return (
     <div className={`quality-card ${categoryClass}`}>
+
       <div className="quality-top">
+
         <div>
-          <div className="section-label">WATER QUALITY</div>
+          <div className="section-label">
+            WATER QUALITY
+          </div>
+
           <h2>Overall Assessment</h2>
         </div>
 
         <div className="quality-category">
           {category}
         </div>
+
       </div>
 
+
       <div className="quality-ring-wrapper">
+
         <div
           className="quality-ring"
           style={{
             "--progress": `${progress}deg`,
           }}
         >
+
           <div className="quality-ring-inner">
+
             <div className="score-number">
-              {score100 !== null ? score100 : "--"}
+              {qualityScore100 !== null
+                ? qualityScore100
+                : "--"}
             </div>
 
-            <div className="score-total">/ 100</div>
+            <div className="score-total">
+              / 100
+            </div>
 
             <div className="quality-label">
               {category}
             </div>
+
           </div>
+
         </div>
+
       </div>
 
+
       <div className="quality-details">
-        {score !== null
-          ? `Circuit quality score: ${score.toFixed(1)} / 10`
-          : "Waiting for quality score from monitoring system"}
+
+        {contaminationScore !== null ? (
+          <>
+            Contamination score:{" "}
+            {contaminationScore.toFixed(1)} / 10
+            <br />
+            Quality score:{" "}
+            {qualityScore10.toFixed(1)} / 10
+          </>
+        ) : (
+          "Waiting for ML contamination score"
+        )}
+
       </div>
+
     </div>
   );
 }
 
+
 function App() {
+
   /*
-   * HARDWARE DATA PLACEHOLDER
+   * HARDWARE + ML DATA
    *
    * These values are intentionally null.
    *
-   * Later they will come from the ESP32/backend.
-   *
-   * Expected data:
-   *
-   * temperature
-   * turbidityVoltage
-   * qualityScore10
-   * cameraUrl
-   * deviceOnline
+   * Later they will come from the FastAPI backend.
    */
 
   const sensorData = {
+
     temperature: null,
+
     turbidityVoltage: null,
-    qualityScore10: null,
+
+    contaminationScore: null,
+
     cameraUrl: null,
+
     deviceOnline: false,
+
   };
+
 
   return (
     <div className="app">
@@ -125,7 +184,9 @@ function App() {
       <div className="background-glow glow-one" />
       <div className="background-glow glow-two" />
 
+
       <main className="dashboard">
+
 
         {/* HEADER */}
 
@@ -138,11 +199,17 @@ function App() {
             </div>
 
             <div>
+
               <h1>HYDROMIND</h1>
-              <p>Smart Water Quality Intelligence</p>
+
+              <p>
+                Smart Water Quality Intelligence
+              </p>
+
             </div>
 
           </div>
+
 
           <div
             className={`connection-status ${
@@ -151,11 +218,13 @@ function App() {
                 : "offline"
             }`}
           >
+
             <span className="connection-dot" />
 
             {sensorData.deviceOnline
               ? "ESP32 CONNECTED"
               : "ESP32 OFFLINE"}
+
           </div>
 
         </header>
@@ -176,8 +245,8 @@ function App() {
 
           <p>
             Real-time monitoring of water temperature,
-            turbidity output and overall quality using
-            an ESP32-CAM based embedded system.
+            turbidity output and contamination-based
+            water quality using an ESP32-CAM system.
           </p>
 
         </section>
@@ -187,6 +256,7 @@ function App() {
 
         <section className="main-grid">
 
+
           {/* CAMERA */}
 
           <div className="camera-card">
@@ -194,19 +264,28 @@ function App() {
             <div className="card-header">
 
               <div>
+
                 <div className="section-label">
                   VISUAL MONITORING
                 </div>
 
-                <h2>Water Sample</h2>
+                <h2>
+                  Water Sample
+                </h2>
+
               </div>
 
+
               <div className="live-label">
+
                 <span />
+
                 CAMERA
+
               </div>
 
             </div>
+
 
             <div className="camera-container">
 
@@ -222,23 +301,36 @@ function App() {
                 <div className="camera-placeholder">
 
                   <div className="camera-symbol">
+
                     <div className="camera-lens" />
+
                   </div>
 
-                  <h3>Waiting for ESP32-CAM</h3>
+                  <h3>
+                    Waiting for ESP32-CAM
+                  </h3>
 
                   <p>
-                    The water sample image will appear
-                    here once the camera connects.
+                    The water sample image will
+                    appear here once the camera
+                    connects.
                   </p>
 
                 </div>
 
               )}
 
+
               <div className="camera-overlay">
-                <span>ESP32-CAM</span>
-                <span>LIVE FEED</span>
+
+                <span>
+                  ESP32-CAM
+                </span>
+
+                <span>
+                  LIVE FEED
+                </span>
+
               </div>
 
             </div>
@@ -249,7 +341,9 @@ function App() {
           {/* QUALITY */}
 
           <QualityCard
-            score={sensorData.qualityScore10}
+            contaminationScore={
+              sensorData.contaminationScore
+            }
           />
 
         </section>
@@ -259,6 +353,7 @@ function App() {
 
         <section className="sensor-grid">
 
+
           <SensorCard
             icon="°"
             title="WATER TEMPERATURE"
@@ -267,6 +362,7 @@ function App() {
             description="DS18B20 waterproof temperature probe"
           />
 
+
           <SensorCard
             icon="≈"
             title="TURBIDITY OUTPUT"
@@ -274,6 +370,7 @@ function App() {
             unit=" V"
             description="R-0913 analog voltage output"
           />
+
 
           <div className="sensor-card system-card">
 
@@ -289,9 +386,11 @@ function App() {
 
             </div>
 
+
             <div className="sensor-title">
               DEVICE STATUS
             </div>
+
 
             <div className="device-state">
 
@@ -308,6 +407,7 @@ function App() {
                 : "Awaiting Device"}
 
             </div>
+
 
             <div className="sensor-description">
               ESP32-CAM communication status
@@ -330,7 +430,9 @@ function App() {
                 APPLICATION ASSESSMENT
               </div>
 
-              <h2>Water Suitability</h2>
+              <h2>
+                Water Suitability
+              </h2>
 
             </div>
 
@@ -343,6 +445,7 @@ function App() {
 
           <div className="suitability-grid">
 
+
             <div className="suitability-card">
 
               <div className="suitability-icon">
@@ -351,7 +454,9 @@ function App() {
 
               <div>
 
-                <span>DRINKING</span>
+                <span>
+                  DRINKING
+                </span>
 
                 <h3>
                   Requires Further Testing
@@ -375,7 +480,9 @@ function App() {
 
               <div>
 
-                <span>AGRICULTURE</span>
+                <span>
+                  AGRICULTURE
+                </span>
 
                 <h3>
                   Assessment Pending
@@ -399,7 +506,9 @@ function App() {
 
               <div>
 
-                <span>GENERAL USE</span>
+                <span>
+                  GENERAL USE
+                </span>
 
                 <h3>
                   Assessment Pending
@@ -414,12 +523,13 @@ function App() {
 
             </div>
 
+
           </div>
 
         </section>
 
 
-        {/* HISTORY */}
+        {/* SENSOR HISTORY */}
 
         <section className="data-section">
 
@@ -431,7 +541,9 @@ function App() {
                 MONITORING
               </div>
 
-              <h2>Sensor History</h2>
+              <h2>
+                Sensor History
+              </h2>
 
             </div>
 
@@ -467,7 +579,9 @@ function App() {
 
         <footer className="footer">
 
-          <span>HYDROMIND</span>
+          <span>
+            HYDROMIND
+          </span>
 
           <span>
             ESP32-CAM&nbsp;&nbsp;•&nbsp;&nbsp;
@@ -476,6 +590,7 @@ function App() {
           </span>
 
         </footer>
+
 
       </main>
 
