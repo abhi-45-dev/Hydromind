@@ -1,122 +1,486 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function SensorCard({ icon, title, value, unit, description }) {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="sensor-card">
+      <div className="sensor-card-header">
+        <div className="sensor-icon">{icon}</div>
 
-      <div className="ticks"></div>
+        <span className="live-tag">
+          <span className="status-dot" />
+          LIVE
+        </span>
+      </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <div className="sensor-title">{title}</div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <div className="sensor-reading">
+        {value !== null ? value : "--"}
+        {value !== null && <span>{unit}</span>}
+      </div>
+
+      <div className="sensor-description">{description}</div>
+    </div>
+  );
 }
 
-export default App
+function QualityCard({ score }) {
+  const score100 = score !== null ? Math.round(score * 10) : null;
+
+  let category = "AWAITING DATA";
+  let categoryClass = "waiting";
+
+  if (score100 !== null) {
+    if (score100 >= 90) {
+      category = "EXCELLENT";
+      categoryClass = "good";
+    } else if (score100 >= 75) {
+      category = "GOOD";
+      categoryClass = "good";
+    } else if (score100 >= 50) {
+      category = "MODERATE";
+      categoryClass = "moderate";
+    } else if (score100 >= 25) {
+      category = "POOR";
+      categoryClass = "poor";
+    } else {
+      category = "CRITICAL";
+      categoryClass = "critical";
+    }
+  }
+
+  const progress = score100 !== null ? score100 * 3.6 : 0;
+
+  return (
+    <div className={`quality-card ${categoryClass}`}>
+      <div className="quality-top">
+        <div>
+          <div className="section-label">WATER QUALITY</div>
+          <h2>Overall Assessment</h2>
+        </div>
+
+        <div className="quality-category">
+          {category}
+        </div>
+      </div>
+
+      <div className="quality-ring-wrapper">
+        <div
+          className="quality-ring"
+          style={{
+            "--progress": `${progress}deg`,
+          }}
+        >
+          <div className="quality-ring-inner">
+            <div className="score-number">
+              {score100 !== null ? score100 : "--"}
+            </div>
+
+            <div className="score-total">/ 100</div>
+
+            <div className="quality-label">
+              {category}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="quality-details">
+        {score !== null
+          ? `Circuit quality score: ${score.toFixed(1)} / 10`
+          : "Waiting for quality score from monitoring system"}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  /*
+   * HARDWARE DATA PLACEHOLDER
+   *
+   * These values are intentionally null.
+   *
+   * Later they will come from the ESP32/backend.
+   *
+   * Expected data:
+   *
+   * temperature
+   * turbidityVoltage
+   * qualityScore10
+   * cameraUrl
+   * deviceOnline
+   */
+
+  const sensorData = {
+    temperature: null,
+    turbidityVoltage: null,
+    qualityScore10: null,
+    cameraUrl: null,
+    deviceOnline: false,
+  };
+
+  return (
+    <div className="app">
+
+      <div className="background-glow glow-one" />
+      <div className="background-glow glow-two" />
+
+      <main className="dashboard">
+
+        {/* HEADER */}
+
+        <header className="header">
+
+          <div className="brand">
+
+            <div className="brand-logo">
+              H
+            </div>
+
+            <div>
+              <h1>HYDROMIND</h1>
+              <p>Smart Water Quality Intelligence</p>
+            </div>
+
+          </div>
+
+          <div
+            className={`connection-status ${
+              sensorData.deviceOnline
+                ? "online"
+                : "offline"
+            }`}
+          >
+            <span className="connection-dot" />
+
+            {sensorData.deviceOnline
+              ? "ESP32 CONNECTED"
+              : "ESP32 OFFLINE"}
+          </div>
+
+        </header>
+
+
+        {/* HERO */}
+
+        <section className="hero">
+
+          <div className="hero-label">
+            WATER MONITORING SYSTEM
+          </div>
+
+          <h2>
+            Understand your
+            <span> water.</span>
+          </h2>
+
+          <p>
+            Real-time monitoring of water temperature,
+            turbidity output and overall quality using
+            an ESP32-CAM based embedded system.
+          </p>
+
+        </section>
+
+
+        {/* CAMERA + QUALITY */}
+
+        <section className="main-grid">
+
+          {/* CAMERA */}
+
+          <div className="camera-card">
+
+            <div className="card-header">
+
+              <div>
+                <div className="section-label">
+                  VISUAL MONITORING
+                </div>
+
+                <h2>Water Sample</h2>
+              </div>
+
+              <div className="live-label">
+                <span />
+                CAMERA
+              </div>
+
+            </div>
+
+            <div className="camera-container">
+
+              {sensorData.cameraUrl ? (
+
+                <img
+                  src={sensorData.cameraUrl}
+                  alt="Water sample captured by ESP32-CAM"
+                />
+
+              ) : (
+
+                <div className="camera-placeholder">
+
+                  <div className="camera-symbol">
+                    <div className="camera-lens" />
+                  </div>
+
+                  <h3>Waiting for ESP32-CAM</h3>
+
+                  <p>
+                    The water sample image will appear
+                    here once the camera connects.
+                  </p>
+
+                </div>
+
+              )}
+
+              <div className="camera-overlay">
+                <span>ESP32-CAM</span>
+                <span>LIVE FEED</span>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          {/* QUALITY */}
+
+          <QualityCard
+            score={sensorData.qualityScore10}
+          />
+
+        </section>
+
+
+        {/* SENSOR CARDS */}
+
+        <section className="sensor-grid">
+
+          <SensorCard
+            icon="°"
+            title="WATER TEMPERATURE"
+            value={sensorData.temperature}
+            unit="°C"
+            description="DS18B20 waterproof temperature probe"
+          />
+
+          <SensorCard
+            icon="≈"
+            title="TURBIDITY OUTPUT"
+            value={sensorData.turbidityVoltage}
+            unit=" V"
+            description="R-0913 analog voltage output"
+          />
+
+          <div className="sensor-card system-card">
+
+            <div className="sensor-card-header">
+
+              <div className="sensor-icon system-icon">
+                ◎
+              </div>
+
+              <span className="live-tag">
+                SYSTEM
+              </span>
+
+            </div>
+
+            <div className="sensor-title">
+              DEVICE STATUS
+            </div>
+
+            <div className="device-state">
+
+              <span
+                className={`state-indicator ${
+                  sensorData.deviceOnline
+                    ? "active"
+                    : "inactive"
+                }`}
+              />
+
+              {sensorData.deviceOnline
+                ? "Monitoring Active"
+                : "Awaiting Device"}
+
+            </div>
+
+            <div className="sensor-description">
+              ESP32-CAM communication status
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* WATER SUITABILITY */}
+
+        <section className="suitability-section">
+
+          <div className="section-heading">
+
+            <div>
+
+              <div className="section-label">
+                APPLICATION ASSESSMENT
+              </div>
+
+              <h2>Water Suitability</h2>
+
+            </div>
+
+            <span className="assessment-note">
+              Based on overall quality score
+            </span>
+
+          </div>
+
+
+          <div className="suitability-grid">
+
+            <div className="suitability-card">
+
+              <div className="suitability-icon">
+                💧
+              </div>
+
+              <div>
+
+                <span>DRINKING</span>
+
+                <h3>
+                  Requires Further Testing
+                </h3>
+
+                <p>
+                  Current sensors cannot certify
+                  drinking-water safety.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div className="suitability-card">
+
+              <div className="suitability-icon">
+                🌱
+              </div>
+
+              <div>
+
+                <span>AGRICULTURE</span>
+
+                <h3>
+                  Assessment Pending
+                </h3>
+
+                <p>
+                  Classification will use the
+                  system quality score.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div className="suitability-card">
+
+              <div className="suitability-icon">
+                ⚙
+              </div>
+
+              <div>
+
+                <span>GENERAL USE</span>
+
+                <h3>
+                  Assessment Pending
+                </h3>
+
+                <p>
+                  Suitability will be determined
+                  from measured parameters.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* HISTORY */}
+
+        <section className="data-section">
+
+          <div className="section-heading">
+
+            <div>
+
+              <div className="section-label">
+                MONITORING
+              </div>
+
+              <h2>Sensor History</h2>
+
+            </div>
+
+            <span className="assessment-note">
+              Real-time data visualization
+            </span>
+
+          </div>
+
+
+          <div className="chart-placeholder">
+
+            <div className="chart-icon">
+              ↗
+            </div>
+
+            <h3>
+              Historical data will appear here
+            </h3>
+
+            <p>
+              Temperature, turbidity voltage and
+              quality score will be plotted once
+              the ESP32 begins transmitting readings.
+            </p>
+
+          </div>
+
+        </section>
+
+
+        {/* FOOTER */}
+
+        <footer className="footer">
+
+          <span>HYDROMIND</span>
+
+          <span>
+            ESP32-CAM&nbsp;&nbsp;•&nbsp;&nbsp;
+            DS18B20&nbsp;&nbsp;•&nbsp;&nbsp;
+            R-0913
+          </span>
+
+        </footer>
+
+      </main>
+
+    </div>
+  );
+}
+
+export default App;
