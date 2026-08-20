@@ -9,7 +9,7 @@
 // --- Wi-Fi & Server Configuration ---
 const char* ssid          = "Galaxy A14 5G A018";
 const char* password      = "abc123def";
-const char* serverAddress = "172.18.225.17"; // Server IP receiving values
+const char* serverAddress = "http://172.18.225.17:8000/api/analyze"; // Server IP receiving values
 
 // --- Pin Assignments ---
 #define ONE_WIRE_BUS 15     // Moved DS18B20 to GPIO 15 to free I2C pins
